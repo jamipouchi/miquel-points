@@ -6,10 +6,18 @@ type RequestFormProps = {
 };
 
 export function RequestForm({ onCreated }: RequestFormProps) {
+	const [open, setOpen] = useState(false);
 	const [amount, setAmount] = useState("");
 	const [reason, setReason] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState("");
+
+	function handleCancel() {
+		setOpen(false);
+		setAmount("");
+		setReason("");
+		setError("");
+	}
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -29,6 +37,7 @@ export function RequestForm({ onCreated }: RequestFormProps) {
 				setError(result.error);
 				return;
 			}
+			setOpen(false);
 			setAmount("");
 			setReason("");
 			onCreated();
@@ -37,9 +46,18 @@ export function RequestForm({ onCreated }: RequestFormProps) {
 		}
 	}
 
+	if (!open) {
+		return (
+			<div className="request-section">
+				<button type="button" className="link-button" onClick={() => setOpen(true)}>
+					request points
+				</button>
+			</div>
+		);
+	}
+
 	return (
 		<div className="request-section">
-			<p className="tiny">request points</p>
 			<form className="request-form" onSubmit={handleSubmit}>
 				<input
 					type="number"
@@ -58,9 +76,14 @@ export function RequestForm({ onCreated }: RequestFormProps) {
 					required
 					maxLength={280}
 				/>
-				<button className="submit" type="submit" disabled={isSubmitting}>
-					{isSubmitting ? "sending..." : "request"}
-				</button>
+				<div className="row action-row">
+					<button className="submit" type="submit" disabled={isSubmitting}>
+						{isSubmitting ? "sending..." : "request"}
+					</button>
+					<button type="button" className="link-button" onClick={handleCancel} disabled={isSubmitting}>
+						cancel
+					</button>
+				</div>
 			</form>
 			{error && <p className="notice error">{error}</p>}
 		</div>

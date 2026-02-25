@@ -103,10 +103,14 @@ export async function fetchAdminRequests() {
 	return fetchJson<{ requests: AdminPointRequest[] }>("/api/admin/requests", undefined, "Unable to load requests");
 }
 
-export async function acceptRequest(id: string) {
+export async function acceptRequest(id: string, amount: number) {
 	return fetchJson<{ ok: true }>(
 		`/api/admin/requests/${encodeURIComponent(id)}/accept`,
-		{ method: "POST" },
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ amount }),
+		},
 		"Unable to accept request",
 	);
 }

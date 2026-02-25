@@ -746,20 +746,45 @@ app.get("/api/admin/requests", requireAuth, requireAdmin, async (c) => {
 app.post("/api/admin/requests/:id/accept", requireAuth, requireAdmin, async (c) => {
   const requestId = c.req.param("id");
 
+  let payload: unknown;
+  try {
+    payload = await c.req.json();
+  } catch {
+    payload = {};
+  }
+
+  const body = payload as { amount?: unknown };
+  const overrideAmount = typeof body.amount === "number" ? Math.floor(body.amount) : null;
+
+  if (overrideAmount !== null && overrideAmount <= 0) {
+    return jsonError(c, 400, "Amount must be a positive integer");
+  }
+
+  const request = await c.env.points_db
+    .prepare("SELECT id, user_id, amount, reason FROM point_requests WHERE id = ? AND status = 'pending' LIMIT 1")
+    .bind(requestId)
+    .first<{ id: string; user_id: string; amount: number; reason: string }>();
+
+  if (!request) {
+    return jsonError(c, 404, "Request not found or not pending");
+  }
+
+  const finalAmount = overrideAmount ?? request.amount;
+
   const batchResults = await c.env.points_db.batch([
     c.env.points_db
       .prepare(
         `INSERT INTO points (id, user_id, delta, reason, created_by)
-         SELECT ?, pr.user_id, pr.amount, pr.reason, 'request'
+         SELECT ?, pr.user_id, ?, pr.reason, 'request'
          FROM point_requests pr
          WHERE pr.id = ? AND pr.status = 'pending'`,
       )
-      .bind(crypto.randomUUID(), requestId),
+      .bind(crypto.randomUUID(), finalAmount, requestId),
     c.env.points_db.prepare("DELETE FROM point_requests WHERE id = ? AND status = 'pending'").bind(requestId),
   ]);
 
   if (!batchResults[0].meta.changes) {
-    return jsonError(c, 404, "Request not found or not pending");
+    return jsonError(c, 404, "Request already processed");
   }
 
   return c.json({ ok: true });
