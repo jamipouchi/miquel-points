@@ -221,34 +221,27 @@ input[type="number"]::-webkit-outer-spin-button {
 	margin-top: 24px;
 }
 
-.request-cta-wrap {
-	display: grid;
-	gap: 8px;
-	padding: 12px;
-	border: 1px solid var(--line);
-	background: var(--surface);
-}
-
 .request-cta {
 	width: 100%;
-	padding: 10px 12px;
-	border: 1px solid var(--text);
-	background: var(--text);
-	color: var(--surface);
+	padding: 8px 12px;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	background: transparent;
+	color: var(--text);
 	font: inherit;
-	font-size: 0.9rem;
+	font-size: 0.85rem;
 	text-transform: lowercase;
-	letter-spacing: 0.01em;
+	letter-spacing: 0.02em;
 	cursor: pointer;
-	transition: opacity 0.15s, transform 0.15s;
+	transition: border-color 0.15s, background 0.15s;
 }
 
 .request-cta:hover {
-	opacity: 0.9;
+	border-color: var(--text);
 }
 
 .request-cta:active {
-	transform: translateY(1px);
+	background: var(--line);
 }
 
 .request-cta:focus-visible {

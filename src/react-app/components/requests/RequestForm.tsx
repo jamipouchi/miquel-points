@@ -48,8 +48,7 @@ export function RequestForm({ onCreated }: RequestFormProps) {
 
 	if (!open) {
 		return (
-			<div className="request-section request-cta-wrap">
-				<p className="tiny">need points?</p>
+			<div className="request-section">
 				<button type="button" className="request-cta" onClick={() => setOpen(true)}>
 					request points
 				</button>
