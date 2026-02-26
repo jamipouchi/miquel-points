@@ -1,5 +1,5 @@
 import { fetchJson } from "./client";
-import type { AdminPointRequest, AuthUser, PointItem, PointRequest } from "../types";
+import type { AdminPointRequest, AuthUser, PendingUser, PointItem, PointRequest } from "../types";
 
 type SessionResponse = {
 	user: AuthUser;
@@ -124,5 +124,21 @@ export async function rejectRequest(id: string, payload: { reason: string }) {
 			body: JSON.stringify(payload),
 		},
 		"Unable to reject request",
+	);
+}
+
+// --- User verification (admin) ---
+
+export async function fetchPendingUsers() {
+	return fetchJson<{ users: PendingUser[] }>("/api/admin/users/pending", undefined, "Unable to load users");
+}
+
+export async function verifyUser(id: string) {
+	return fetchJson<{ ok: true }>(
+		`/api/admin/users/${encodeURIComponent(id)}/verify`,
+		{
+			method: "POST",
+		},
+		"Unable to verify user",
 	);
 }

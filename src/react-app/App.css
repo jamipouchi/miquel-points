@@ -44,6 +44,19 @@
 	width: min(480px, 100%);
 }
 
+.admin-tabs {
+	margin-bottom: 12px;
+	gap: 16px;
+}
+
+.admin-tab {
+	color: var(--muted);
+}
+
+.admin-tab.is-active {
+	color: var(--text);
+}
+
 .auth-minimal {
 	width: min(260px, 100%);
 }

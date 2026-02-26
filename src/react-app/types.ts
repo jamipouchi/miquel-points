@@ -30,4 +30,11 @@ export type AdminPointRequest = {
 	createdAt: string;
 };
 
+export type PendingUser = {
+	id: string;
+	username: string;
+	description: string;
+	createdAt: string;
+};
+
 export type AuthScreen = "login" | "signup";

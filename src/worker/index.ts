@@ -67,6 +67,13 @@ type AdminPointRequestRow = PointRequestRow & {
   username: string;
 };
 
+type PendingUserRow = {
+  id: string;
+  username: string;
+  description: string;
+  created_at: string;
+};
+
 const ADMIN_USERNAME = "miquel";
 
 const USERNAME_REGEX = /^[a-z0-9_]{3,24}$/;
@@ -719,6 +726,42 @@ app.put("/api/requests/:id", requireAuth, async (c) => {
 });
 
 // --- Point requests (admin) ---
+
+app.get("/api/admin/users/pending", requireAuth, requireAdmin, async (c) => {
+  const { results } = await c.env.points_db
+    .prepare(
+      `SELECT id, username, description, created_at
+       FROM users
+       WHERE verified_at IS NULL
+       ORDER BY created_at ASC`,
+    )
+    .all<PendingUserRow>();
+
+  return c.json({
+    users: (results ?? []).map((user) => ({
+      id: user.id,
+      username: user.username,
+      description: user.description,
+      createdAt: user.created_at,
+    })),
+  });
+});
+
+app.post("/api/admin/users/:id/verify", requireAuth, requireAdmin, async (c) => {
+  const userId = c.req.param("id");
+  const nowIso = new Date().toISOString();
+
+  const result = await c.env.points_db
+    .prepare("UPDATE users SET verified_at = ? WHERE id = ? AND verified_at IS NULL")
+    .bind(nowIso, userId)
+    .run();
+
+  if (!result.meta.changes) {
+    return jsonError(c, 404, "User not found or already verified");
+  }
+
+  return c.json({ ok: true });
+});
 
 app.get("/api/admin/requests", requireAuth, requireAdmin, async (c) => {
   const { results } = await c.env.points_db
