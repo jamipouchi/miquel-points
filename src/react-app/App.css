@@ -91,23 +91,34 @@ textarea {
 
 .submit {
 	margin-top: 4px;
-	padding: 8px 0;
-	border: 1px solid var(--line);
-	border-radius: 0;
-	background: transparent;
-	color: var(--text);
+	padding: 8px 12px;
+	border: 1px solid var(--text);
+	border-radius: 6px;
+	background: var(--text);
+	color: var(--surface);
 	cursor: pointer;
 	font: inherit;
 	font-size: 0.9rem;
-	transition: border-color 0.15s;
+	font-weight: 500;
+	letter-spacing: 0.01em;
+	transition: opacity 0.15s, transform 0.15s;
 }
 
 .submit:hover:not([disabled]) {
-	border-color: var(--text);
+	opacity: 0.9;
+}
+
+.submit:active:not([disabled]) {
+	transform: translateY(1px);
+}
+
+.submit:focus-visible {
+	outline: 2px solid var(--text);
+	outline-offset: 2px;
 }
 
 .submit[disabled] {
-	opacity: 0.35;
+	opacity: 0.45;
 	cursor: not-allowed;
 }
 
@@ -208,6 +219,41 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .request-section {
 	margin-top: 24px;
+}
+
+.request-cta-wrap {
+	display: grid;
+	gap: 8px;
+	padding: 12px;
+	border: 1px solid var(--line);
+	background: var(--surface);
+}
+
+.request-cta {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid var(--text);
+	background: var(--text);
+	color: var(--surface);
+	font: inherit;
+	font-size: 0.9rem;
+	text-transform: lowercase;
+	letter-spacing: 0.01em;
+	cursor: pointer;
+	transition: opacity 0.15s, transform 0.15s;
+}
+
+.request-cta:hover {
+	opacity: 0.9;
+}
+
+.request-cta:active {
+	transform: translateY(1px);
+}
+
+.request-cta:focus-visible {
+	outline: 2px solid var(--text);
+	outline-offset: 2px;
 }
 
 .request-form {

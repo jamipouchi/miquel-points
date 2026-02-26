@@ -201,7 +201,7 @@ export function AdminPage() {
 										onClick={() => void handleAccept(req.id)}
 										disabled={requestBusyId !== null}
 									>
-										accept
+										approve
 									</button>
 									<button
 										type="button"
