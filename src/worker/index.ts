@@ -52,6 +52,13 @@ type TotalRow = {
   total: number | string;
 };
 
+type LeaderboardRow = {
+  user_id: string;
+  username: string;
+  description: string;
+  total_points: number | string;
+};
+
 type PointRequestRow = {
   id: string;
   user_id: string;
@@ -90,6 +97,8 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const DEFAULT_POINTS_PAGE_LIMIT = 20;
 const MAX_POINTS_PAGE_LIMIT = 100;
+const DEFAULT_LEADERBOARD_LIMIT = 50;
+const MAX_LEADERBOARD_LIMIT = 200;
 
 const app = new Hono<AppEnv>();
 const textEncoder = new TextEncoder();
@@ -354,6 +363,36 @@ async function queryPointsPage(options: { db: D1Database; userId: string; limit:
     })),
     nextCursor,
   };
+}
+
+async function queryLeaderboard(db: D1Database, limit: number) {
+  const { results } = await db
+    .prepare(
+      `SELECT
+         u.id AS user_id,
+         u.username AS username,
+         u.description AS description,
+         COALESCE(SUM(p.delta), 0) AS total_points
+       FROM users u
+       LEFT JOIN points p ON p.user_id = u.id
+       WHERE u.verified_at IS NOT NULL
+       GROUP BY u.id, u.username, u.description
+       ORDER BY total_points DESC, u.username ASC
+       LIMIT ?`,
+    )
+    .bind(limit)
+    .all<LeaderboardRow>();
+
+  return (results ?? []).map((row, index) => {
+    const totalPoints = Number(row.total_points ?? 0);
+    return {
+      rank: index + 1,
+      userId: row.user_id,
+      username: row.username,
+      description: row.description,
+      totalPoints: Number.isFinite(totalPoints) ? totalPoints : 0,
+    };
+  });
 }
 
 async function loadAuthContext(c: Context<AppEnv>, options: { touchSession: boolean }) {
@@ -623,6 +662,17 @@ app.get("/api/points", requireAuth, async (c) => {
     items: page.items,
     nextCursor: page.nextCursor,
   });
+});
+
+app.get("/api/leaderboard", requireAuth, async (c) => {
+  const rawLimit = c.req.query("limit");
+  const parsedLimit = Number.parseInt(rawLimit ?? "", 10);
+  const limit = Number.isFinite(parsedLimit)
+    ? Math.max(1, Math.min(MAX_LEADERBOARD_LIMIT, parsedLimit))
+    : DEFAULT_LEADERBOARD_LIMIT;
+
+  const entries = await queryLeaderboard(c.env.points_db, limit);
+  return c.json({ entries });
 });
 
 // --- Point requests (user) ---

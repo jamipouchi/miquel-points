@@ -12,6 +12,14 @@ export type PointItem = {
 	createdAt: string;
 };
 
+export type LeaderboardEntry = {
+	rank: number;
+	userId: string;
+	username: string;
+	description: string;
+	totalPoints: number;
+};
+
 export type PointRequest = {
 	id: string;
 	amount: number;

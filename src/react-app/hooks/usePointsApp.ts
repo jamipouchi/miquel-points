@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchCurrentSession, fetchPoints, loginUser, logoutUser, signupUser } from "../api/pointsApi";
-import type { AuthScreen, AuthUser, PointItem } from "../types";
+import { fetchCurrentSession, fetchLeaderboard, fetchPoints, loginUser, logoutUser, signupUser } from "../api/pointsApi";
+import type { AuthScreen, AuthUser, LeaderboardEntry, PointItem } from "../types";
 
 type SubmitLoginPayload = {
   username: string;
@@ -18,10 +18,12 @@ export function usePointsApp() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [totalPoints, setTotalPoints] = useState(0);
   const [items, setItems] = useState<PointItem[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isBooting, setIsBooting] = useState(true);
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [notice, setNotice] = useState("");
   const [isError, setIsError] = useState(false);
 
@@ -70,6 +72,21 @@ export function usePointsApp() {
     [resetPointsState],
   );
 
+  const loadLeaderboard = useCallback(async () => {
+    setIsLoadingLeaderboard(true);
+    try {
+      const result = await fetchLeaderboard();
+      if (!result.ok) {
+        return false;
+      }
+
+      setLeaderboard(result.data.entries);
+      return true;
+    } finally {
+      setIsLoadingLeaderboard(false);
+    }
+  }, []);
+
   const bootSession = useCallback(async () => {
     setIsBooting(true);
     clearNotice();
@@ -84,12 +101,12 @@ export function usePointsApp() {
 
       setUser(session.data.user);
       setTotalPoints(session.data.totalPoints);
-      await loadPoints(null);
+      await Promise.all([loadPoints(null), loadLeaderboard()]);
       return true;
     } finally {
       setIsBooting(false);
     }
-  }, [clearNotice, loadPoints, resetPointsState]);
+  }, [clearNotice, loadLeaderboard, loadPoints, resetPointsState]);
 
   useEffect(() => {
     void bootSession();
@@ -149,6 +166,7 @@ export function usePointsApp() {
     await logoutUser();
     setUser(null);
     resetPointsState();
+    setLeaderboard([]);
     setScreen("login");
     clearNotice();
   }, [clearNotice, resetPointsState]);
@@ -166,10 +184,12 @@ export function usePointsApp() {
     user,
     totalPoints,
     items,
+    leaderboard,
     nextCursor,
     isBooting,
     isAuthSubmitting,
     isLoadingMore,
+    isLoadingLeaderboard,
     notice,
     isError,
     switchScreen,
