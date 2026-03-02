@@ -9,7 +9,7 @@ import { usePointsApp } from "./hooks/usePointsApp";
 type View = "points" | "admin";
 
 function App() {
-  const { screen, user, totalPoints, items, nextCursor, isBooting, isAuthSubmitting, isLoadingMore, notice, isError, switchScreen, submitLogin, submitSignup, performLogout, loadMorePoints } = usePointsApp();
+  const { screen, user, totalPoints, items, leaderboard, nextCursor, isBooting, isAuthSubmitting, isLoadingMore, isLoadingLeaderboard, notice, isError, switchScreen, submitLogin, submitSignup, performLogout, loadMorePoints } = usePointsApp();
   const [view, setView] = useState<View>("points");
 
   if (isBooting) {
@@ -43,7 +43,16 @@ function App() {
         {view === "admin" && user.isAdmin ? (
           <AdminPage />
         ) : (
-          <PointsPanel user={user} totalPoints={totalPoints} items={items} nextCursor={nextCursor} isLoadingMore={isLoadingMore} onLoadMore={loadMorePoints} />
+          <PointsPanel
+            user={user}
+            totalPoints={totalPoints}
+            items={items}
+            leaderboard={leaderboard}
+            nextCursor={nextCursor}
+            isLoadingMore={isLoadingMore}
+            isLoadingLeaderboard={isLoadingLeaderboard}
+            onLoadMore={loadMorePoints}
+          />
         )}
       </main>
     </div>

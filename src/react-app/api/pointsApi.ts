@@ -1,5 +1,12 @@
 import { fetchJson } from "./client";
-import type { AdminPointRequest, AuthUser, PendingUser, PointItem, PointRequest } from "../types";
+import type {
+	AdminPointRequest,
+	AuthUser,
+	LeaderboardEntry,
+	PendingUser,
+	PointItem,
+	PointRequest,
+} from "../types";
 
 type SessionResponse = {
 	user: AuthUser;
@@ -10,6 +17,10 @@ type PointsResponse = {
 	totalPoints: number;
 	items: PointItem[];
 	nextCursor: string | null;
+};
+
+type LeaderboardResponse = {
+	entries: LeaderboardEntry[];
 };
 
 export async function fetchCurrentSession() {
@@ -64,6 +75,15 @@ export async function fetchPoints(cursor: string | null, limit = 20) {
 		`/api/points?${query.toString()}`,
 		undefined,
 		"Unable to load points",
+	);
+}
+
+export async function fetchLeaderboard(limit = 50) {
+	const query = new URLSearchParams({ limit: String(limit) });
+	return fetchJson<LeaderboardResponse>(
+		`/api/leaderboard?${query.toString()}`,
+		undefined,
+		"Unable to load leaderboard",
 	);
 }
 
